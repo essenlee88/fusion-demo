@@ -124,18 +124,18 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
 
 <!-- === Header === -->
 <div class="header">
-  <div class="tag">P0 DECISION NEEDED</div>
-  <h1>Fusion Mode — Multi-Chain Entry Component Options</h1>
+  <div class="tag">P0 DECISION MADE</div>
+  <h1>Fusion Mode — Chain Selector &amp; Affected Modules</h1>
   <p class="sub">
     Meme Rush will support <strong>BSC / SOL / Base multi-chain trading on a single screen</strong> (Fusion Mode).<br>
-    Users switch which chains to view/trade via a "chain selector" on the page.<br>
-    There are <strong>two entry component options</strong> to choose from. Please review the comparison and share your preference.
+    Users select which chains to display via <strong>checkbox chain selectors</strong> on the page (no separate "mode toggle" — just check/uncheck chains).<br>
+    <strong>Option B (Checkbox Multi-Select)</strong> has been approved. This page covers the decision + how it affects each module.
   </p>
   <div class="meta">
     <span>PRD: Fusion Multi-Chain Trading</span>
     <span>PM: Elsa</span>
     <span>KO: 2026-03-25</span>
-    <span>Status: Pending scheduling, component option to be confirmed</span>
+    <span>Status: Pending scheduling</span>
   </div>
 </div>
 
@@ -217,7 +217,113 @@ body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-f
 <!-- === Decision Banner === -->
 <div class="decision-banner">
   <div class="label">DECISION</div>
-  <div class="text"><strong>Option B (Checkbox Multi-Select)</strong> has been approved by Jackson. The PRD has been updated accordingly.</div>
+  <div class="text"><strong>Option B (Checkbox Multi-Select)</strong> has been approved by Jackson. The PRD has been updated accordingly. There is no "multi-chain mode toggle" — users simply check/uncheck chain icons. Checking 1 chain = single-chain view; checking 2-3 = multi-chain view.</div>
+</div>
+
+<!-- === Section: Two Shared Components === -->
+<div class="section">
+  <h2>Two Shared Components</h2>
+  <p class="desc">These two components are reused across multiple modules. Understanding them is key to implementing the affected modules below.</p>
+
+  <div class="compare">
+    <div class="option-card">
+      <div class="card-head">
+        <span class="badge" style="font-size:10px;">1</span>
+        <div><span class="title">Chain Selector</span> <span class="subtitle">Entry Component</span></div>
+      </div>
+      <div class="card-body">
+        <table>
+          <tr><td>What</td><td>BSC / SOL / Base checkbox icons — users check which chains to display</td></tr>
+          <tr><td>Default</td><td>The currently globally selected chain is checked; saved to localStorage</td></tr>
+          <tr><td>Behavior</td><td>Click icon to check/uncheck. Checked = highlighted, unchecked = dimmed. Min 1 chain — last one cannot be unchecked (click has no effect)</td></tr>
+          <tr><td>Sync</td><td>All 3 entry points are globally synced — change at one, all others update instantly</td></tr>
+          <tr><td>Locations</td><td>Next to Meme Rush tab, My Position Bar, My Position Widget top</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="option-card">
+      <div class="card-head">
+        <span class="badge" style="font-size:10px;">2</span>
+        <div><span class="title">Chain Switcher</span> <span class="subtitle">Dialog Tab Component</span></div>
+      </div>
+      <div class="card-body">
+        <table>
+          <tr><td>What</td><td>Chain icon tabs at the top of setting dialogs — only shows currently checked chains</td></tr>
+          <tr><td>Default</td><td>Highlights one checked chain by priority: BSC &rarr; SOL &rarr; Base</td></tr>
+          <tr><td>Behavior</td><td>Switch tab to view/edit that chain's settings. Each chain's config is independent and saved to localStorage</td></tr>
+          <tr><td>Reset</td><td>Only resets current chain's settings</td></tr>
+          <tr><td>Save</td><td>Saves settings for all chains at once</td></tr>
+          <tr><td>Uncheck</td><td>Unchecking a chain preserves its settings — restored when re-checked</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === Section: Affected Modules === -->
+<div class="section">
+  <h2>Modules Affected by Chain Selector</h2>
+  <p class="desc">Below is how the checkbox chain selector and the chain switcher tab component impact each module. Core rule: <strong>each chain is independent</strong> — filters, Blacklist, Customize, Quickbuy presets, and TP/SL are all per-chain.</p>
+
+  <div class="compare" style="grid-template-columns:1fr;">
+    <div class="option-card">
+      <div class="card-body">
+        <table>
+          <tr style="border-bottom:2px solid #333;"><td style="color:var(--yellow);width:140px;">Module</td><td style="color:var(--yellow);">Impact from Chain Selector (Checkbox)</td></tr>
+
+          <tr><td style="font-weight:700;">Token Lists<br><span style="color:var(--t3);font-weight:400;">New / Final / Migrated</span></td>
+          <td>Only tokens from <strong>checked chains</strong> are shown, mixed and sorted cross-chain. Lists refresh in real-time when selection changes. Max 30 tokens per list across all checked chains.</td></tr>
+
+          <tr><td style="font-weight:700;">Filter Dialog</td>
+          <td>Uses <strong>Chain Switcher</strong> tabs at top. Only shows tabs for checked chains. Each chain has independent filter criteria. SOL filters only apply to SOL tokens, BSC filters only to BSC tokens, etc.</td></tr>
+
+          <tr><td style="font-weight:700;">Blacklist Dialog</td>
+          <td>Uses <strong>Chain Switcher</strong> tabs. Each chain has its own Blacklist. Quick-blocking from the token list (Handle / Dev / CA) adds to that token's chain Blacklist only. Market Blacklist is not affected.</td></tr>
+
+          <tr><td style="font-weight:700;">Customize Dialog</td>
+          <td>Uses <strong>Chain Switcher</strong> tabs. Per-chain config for display fields, 2nd Quickbuy Button, etc. <strong>Exception:</strong> Table Layout is chain-agnostic — changes sync globally across all chains.</td></tr>
+
+          <tr><td style="font-weight:700;">QuickBuy<br><span style="color:var(--t3);font-weight:400;">Amount + Preset</span></td>
+          <td>Input expands to show rows for each <strong>checked chain</strong> (1 row per chain). Preset selector shows all chains' preset values. Preset config dialog uses <strong>Chain Switcher</strong> tabs.</td></tr>
+
+          <tr><td style="font-weight:700;">TP/SL</td>
+          <td>TP/SL on/off toggle is stored <strong>per chain separately</strong> (independent from single-chain TP/SL state). TP/SL config dialog uses <strong>Chain Switcher</strong> tabs for per-chain strategy.</td></tr>
+
+          <tr><td style="font-weight:700;">My Position<br><span style="color:var(--t3);font-weight:400;">Widget</span></td>
+          <td>PnL panel shows rows for <strong>checked chains only</strong> (1 chain = single-chain layout, 2-3 chains = split rows). Token list merges holdings from checked chains, sorted by value. Position Settings and Order History use <strong>Chain Switcher</strong> tabs.</td></tr>
+
+          <tr><td style="font-weight:700;">Watchlist /<br>Position Bar</td>
+          <td>Shows favorites and positions from <strong>checked chains only</strong>. Uses Chain Selector component for consistency.</td></tr>
+
+          <tr><td style="font-weight:700;">Notification</td>
+          <td><strong>No frontend change.</strong> All chains share one notification config. In multi-chain view, alert conditions are the union of all chains' conditions.</td></tr>
+
+          <tr><td style="font-weight:700;">Balance</td>
+          <td><strong>No change</strong> — excluded from Fusion scope. Users check balances via the multi-wallet component.</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === Section: Edge Cases === -->
+<div class="section">
+  <h2>Edge Cases</h2>
+  <p class="desc">Key boundaries to handle with the checkbox approach.</p>
+  <div class="compare" style="grid-template-columns:1fr;">
+    <div class="option-card">
+      <div class="card-body">
+        <table>
+          <tr><td style="width:180px;">Last chain checked</td><td>Cannot uncheck — clicking has no effect. Min 1 chain must always be selected.</td></tr>
+          <tr><td>Uncheck then re-check</td><td>All settings (Filter, Blacklist, Customize, Preset, TP/SL) are preserved in localStorage and restored when re-checked.</td></tr>
+          <tr><td>No wallet for chain</td><td>If user checks a chain but has no corresponding wallet, prompt to derive one. Newly derived wallet starts with 0 balance.</td></tr>
+          <tr><td>1 chain checked</td><td>Functionally equivalent to single-chain view. UI still shows the checkbox selector for consistency — no separate "single-chain mode."</td></tr>
+          <tr><td>MemeRank / Topic Rush</td><td>These pages do NOT show the chain selector. They remain single-chain only.</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="footer">
