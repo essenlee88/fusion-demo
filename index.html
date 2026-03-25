@@ -2,7 +2,8 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>Fusion Mode — 全页面交互 Demo</title>
+<title>Fusion Mode — 多链入口组件方案选择</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root {
   --bg: #0a0a0a; --card: #141414; --yellow: #F0B90B; --yellow-btn: #FCD535;
@@ -12,482 +13,254 @@
   --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+body { font-family:var(--font); background:var(--bg); color:var(--t1); -webkit-font-smoothing:antialiased; }
 
-/* ─── Control Bar ─── */
-.ctrl {
-  position:sticky; top:0; z-index:500;
-  display:flex; align-items:center; gap:16px; padding:10px 24px;
-  background:rgba(10,10,10,0.95); backdrop-filter:blur(12px);
+/* ─── Header ─── */
+.header {
+  padding:40px 24px 32px; max-width:960px; margin:0 auto;
   border-bottom:1px solid var(--border);
 }
-.ctrl-group { display:flex; align-items:center; gap:8px; }
-.ctrl-label { font-size:12px; color:var(--t3); white-space:nowrap; }
-.ctrl-sep { width:1px; height:24px; background:var(--border); margin:0 8px; }
-
-.toggle-sw {
-  position:relative; width:44px; height:24px; border-radius:12px;
-  background:#333; cursor:pointer; transition:background 0.2s;
+.header .tag {
+  display:inline-block; font-size:11px; font-weight:700; color:#000;
+  background:var(--yellow-btn); padding:3px 10px; border-radius:6px;
+  margin-bottom:12px; letter-spacing:0.5px;
 }
-.toggle-sw.on { background:var(--yellow); }
-.toggle-sw .dot {
-  position:absolute; top:2px; left:2px; width:20px; height:20px;
-  border-radius:50%; background:#fff; transition:left 0.2s;
+.header h1 { font-size:28px; font-weight:800; margin-bottom:8px; line-height:1.3; }
+.header .sub { font-size:14px; color:var(--t2); line-height:1.7; }
+.header .sub strong { color:var(--t1); }
+.header .meta {
+  margin-top:16px; font-size:12px; color:var(--t3);
+  display:flex; gap:20px; flex-wrap:wrap;
 }
-.toggle-sw.on .dot { left:22px; }
 
-.pill {
-  padding:5px 14px; border-radius:16px; border:1px solid var(--border);
-  background:transparent; color:var(--t2); font-size:12px; font-weight:600;
-  cursor:pointer; transition:all 0.15s; user-select:none;
+/* ─── Section ─── */
+.section { max-width:960px; margin:0 auto; padding:32px 24px; }
+.section + .section { border-top:1px solid var(--border); }
+.section h2 { font-size:18px; font-weight:700; margin-bottom:6px; }
+.section .desc { font-size:13px; color:var(--t2); margin-bottom:20px; line-height:1.6; }
+
+/* ─── Full page preview ─── */
+.page-preview {
+  border-radius:12px; overflow:hidden; border:1px solid #222;
+  margin-bottom:12px;
 }
-.pill.active { background:var(--yellow-btn); color:#000; border-color:var(--yellow-btn); }
-.pill:hover:not(.active) { border-color:var(--t3); color:var(--t1); }
+.page-preview img { display:block; width:100%; height:auto; }
+.page-caption { font-size:11px; color:var(--t3); text-align:center; margin-bottom:8px; }
 
-.status {
-  margin-left:auto; font-size:11px; color:var(--t3);
+/* ─── Side-by-side comparison ─── */
+.compare {
+  display:grid; grid-template-columns:1fr 1fr; gap:20px;
+  margin-bottom:24px;
+}
+@media(max-width:700px) { .compare { grid-template-columns:1fr; } }
+
+.option-card {
+  background:var(--card); border-radius:12px; border:2px solid #222;
+  overflow:hidden; transition:border-color .2s;
+}
+.option-card:hover { border-color:#444; }
+
+.option-card .card-head {
+  padding:16px 20px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+.option-card .card-head .badge {
+  font-size:13px; font-weight:800; color:#000;
+  background:var(--yellow-btn); width:28px; height:28px;
+  border-radius:8px; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.option-card .card-head .title { font-size:15px; font-weight:700; }
+.option-card .card-head .subtitle { font-size:12px; color:var(--t3); font-weight:400; }
+
+.option-card .card-visual {
+  padding:20px; display:flex; justify-content:center;
+  background:#111;
+}
+.option-card .card-visual img { max-height:320px; width:auto; }
+
+.option-card .card-body { padding:16px 20px; }
+.option-card .card-body table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.option-card .card-body td { padding:6px 0; border-bottom:1px solid #1e1e1e; vertical-align:top; }
+.option-card .card-body td:first-child { color:var(--t3); width:60px; font-weight:600; }
+
+.option-card .card-footer { padding:12px 20px 16px; }
+.pro { color:var(--green); font-size:12px; margin-bottom:3px; }
+.con { color:var(--red); font-size:12px; margin-bottom:3px; }
+
+/* ─── Sync points ─── */
+.sync-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:10px; margin-bottom:8px;
+}
+.sync-card {
+  background:var(--card); border-radius:8px; padding:12px 14px;
+  border-left:3px solid var(--yellow);
+}
+.sync-card .loc { font-size:12px; font-weight:700; margin-bottom:3px; }
+.sync-card .sdesc { font-size:11px; color:var(--t2); line-height:1.5; }
+
+/* ─── Dialog previews ─── */
+.dialog-row {
+  display:flex; gap:16px; overflow-x:auto; padding-bottom:8px;
+}
+.dialog-item {
+  flex-shrink:0; background:var(--card); border-radius:10px;
+  overflow:hidden; border:1px solid var(--border);
+}
+.dialog-item .dlabel {
+  font-size:11px; color:var(--t3); padding:8px 12px;
+  border-bottom:1px solid var(--border);
+}
+.dialog-item img { display:block; height:340px; width:auto; }
+
+/* ─── Entry points highlight ─── */
+.entry-list {
+  display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;
+}
+.entry-tag {
   display:flex; align-items:center; gap:6px;
+  background:#1a1a1a; border:1px solid #2a2a2a; border-radius:8px;
+  padding:8px 14px; font-size:12px;
 }
-.status .dot-live { width:6px; height:6px; border-radius:50%; }
-.status .dot-live.off { background:#555; }
-.status .dot-live.on { background:var(--green); animation:blink 1.5s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-/* ─── Page ─── */
-.page-wrap { position:relative; width:100%; background:#000; }
-.page-wrap img.page-img { display:block; width:100%; height:auto; }
-
-/* ─── Trigger Zone ─── */
-.trigger {
-  position:absolute; cursor:pointer; z-index:20;
-  border-radius:6px; border:2px solid transparent;
-  transition:border-color .15s, background .15s;
-}
-.trigger:hover { border-color:rgba(240,185,11,0.4); background:rgba(240,185,11,0.04); }
-.trigger.active { border-color:var(--yellow); background:rgba(240,185,11,0.08); }
-
-/* ─── Chain Dropdown (Figma-exact) ─── */
-.chain-dd {
-  display:none; position:absolute; top:calc(100% + 6px); left:0;
-  z-index:30;
-  min-width:220px; padding:8px 0;
-  background:#1e1e1e; border:1px solid #333; border-radius:12px;
-  box-shadow:0 12px 40px rgba(0,0,0,.8);
-  font-size:14px;
-}
-.chain-dd.show { display:block; animation:ddIn .15s ease-out; }
-@keyframes ddIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
-
-/* Zone 2 (My Positions, right side) → align dropdown to the right */
-#zone2 .chain-dd { left:auto; right:0; }
-
-.chain-dd .dd-row {
-  display:flex; align-items:center; gap:12px;
-  padding:12px 16px; cursor:pointer; transition:background .1s;
-  white-space:nowrap;
-}
-.chain-dd .dd-row:hover { background:#2a2a2a; }
-
-/* Chain icon — rounded square with logo */
-.chain-dd .dd-row .ci {
-  width:28px; height:28px; border-radius:8px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  overflow:hidden;
-}
-.chain-dd .dd-row .ci img { width:28px; height:28px; }
-.chain-dd .dd-row .ci-mini { width:20px; height:20px; border-radius:6px; }
-.chain-dd .dd-row .ci-mini img { width:20px; height:20px; }
-
-/* "BSC/SOL/BASE" row — grouped mini icons */
-.dd-row .ci-group { display:flex; gap:4px; }
-
-.chain-dd .dd-row .cname { flex:1; color:#eaeaea; font-weight:500; font-size:14px; }
-.chain-dd .dd-row .dd-check {
-  color:#eaeaea; font-size:16px; font-weight:300; opacity:0.9;
+.entry-tag .enum {
+  width:20px; height:20px; border-radius:50%; background:var(--yellow);
+  color:#000; font-size:11px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
 
-.chain-dd .dd-sep { height:1px; background:#333; margin:4px 12px; }
-
-/* Option B checkbox */
-.chain-dd .dd-row .dd-cb {
-  width:18px; height:18px; border-radius:4px; border:2px solid #555;
-  display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; transition:all .15s;
+/* ─── Footer ─── */
+.footer {
+  max-width:960px; margin:0 auto; padding:24px;
+  border-top:1px solid var(--border);
+  font-size:11px; color:var(--t3); text-align:center;
 }
-.chain-dd .dd-row .dd-cb.checked {
-  background:var(--yellow); border-color:var(--yellow);
-}
-.chain-dd .dd-row .dd-cb svg { width:12px; height:12px; }
-
-/* ─── Dark backdrop ─── */
-.page-backdrop {
-  position:absolute; top:0; left:0; right:0; bottom:0;
-  background:rgba(0,0,0,.35); z-index:15; display:none;
-}
-.page-backdrop.show { display:block; }
-
-/* ─── Hint overlay ─── */
-.hint-overlay {
-  position:absolute; z-index:18; display:none;
-  pointer-events:none;
-}
-.hint-overlay.show { display:flex; }
-.hint-pulse {
-  width:32px; height:32px; border-radius:50%;
-  border:2px solid var(--yellow);
-  animation:pulse 2s infinite;
-}
-@keyframes pulse {
-  0%{transform:scale(1);opacity:1}
-  50%{transform:scale(1.5);opacity:0.3}
-  100%{transform:scale(1);opacity:1}
-}
-
-/* ─── Info Section ─── */
-.info { max-width:1400px; margin:0 auto; padding:32px 24px 60px; }
-.info h2 { font-size:18px; font-weight:700; margin-bottom:16px; }
-.cmp { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
-.cmp-card {
-  background:var(--card); border-radius:10px; border:2px solid transparent;
-  padding:16px; cursor:pointer; transition:border-color .2s;
-}
-.cmp-card.active { border-color:var(--yellow); }
-.cmp-card:hover:not(.active) { border-color:#333; }
-.cmp-card h3 { font-size:14px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
-.cmp-card h3 .badge { font-size:10px; padding:2px 8px; border-radius:8px; background:var(--yellow-btn); color:#000; font-weight:700; }
-.cmp-card table { width:100%; border-collapse:collapse; font-size:12px; }
-.cmp-card td { padding:5px 0; border-bottom:1px solid #1a1a1a; vertical-align:top; }
-.cmp-card td:first-child { color:var(--t3); width:64px; font-weight:600; }
-.pro { color:var(--green); font-size:11.5px; margin-top:3px; }
-.con { color:var(--red); font-size:11.5px; margin-top:3px; }
-
-.sync-map { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-bottom:32px; }
-.sync-item { background:var(--card); border-radius:8px; padding:12px; border-left:3px solid var(--yellow); }
-.sync-item .loc { font-size:12px; font-weight:700; margin-bottom:4px; }
-.sync-item .desc { font-size:11px; color:var(--t2); line-height:1.5; }
-
-.dialog-row { display:flex; gap:16px; overflow-x:auto; padding-bottom:8px; margin-bottom:32px; }
-.dialog-preview { flex-shrink:0; background:var(--card); border-radius:10px; overflow:hidden; border:1px solid var(--border); }
-.dialog-preview .dp-label { font-size:11px; color:var(--t3); padding:8px 12px; border-bottom:1px solid var(--border); }
-.dialog-preview img { display:block; height:360px; width:auto; }
-@media(max-width:900px){.cmp{grid-template-columns:1fr}}
-
-/* ─── Usage Guide ─── */
-.guide {
-  max-width:1400px; margin:0 auto; padding:20px 24px 0;
-}
-.guide-toggle {
-  display:inline-flex; align-items:center; gap:6px;
-  background:none; border:1px solid #333; border-radius:8px;
-  color:var(--t2); font-size:12px; padding:6px 14px;
-  cursor:pointer; transition:all .15s;
-}
-.guide-toggle:hover { border-color:var(--t3); color:var(--t1); }
-.guide-toggle .arrow { transition:transform .2s; display:inline-block; }
-.guide-toggle.open .arrow { transform:rotate(90deg); }
-.guide-body {
-  display:none; margin-top:12px; padding:16px 20px;
-  background:var(--card); border-radius:10px; border:1px solid var(--border);
-  font-size:13px; line-height:1.8; color:var(--t2);
-}
-.guide-body.show { display:block; }
-.guide-body h3 { color:var(--t1); font-size:14px; font-weight:700; margin:12px 0 6px; }
-.guide-body h3:first-child { margin-top:0; }
-.guide-body kbd {
-  display:inline-block; padding:2px 7px; border-radius:4px;
-  background:#2a2a2a; border:1px solid #444; color:var(--yellow-btn);
-  font-family:monospace; font-size:12px; font-weight:600;
-}
-.guide-body ul { padding-left:18px; }
-.guide-body li { margin-bottom:4px; }
 </style>
 </head>
 <body>
 
-<!-- ═══ Usage Guide (collapsible) ═══ -->
-<div class="guide">
-  <button class="guide-toggle" id="guideBtn" onclick="document.getElementById('guideBtn').classList.toggle('open');document.getElementById('guideBody').classList.toggle('show');">
-    <span class="arrow">&#9654;</span> 使用说明
-  </button>
-  <div class="guide-body" id="guideBody">
-    <h3>这是什么？</h3>
-    <p>Fusion 多链模式交互方案 Demo。用于对比 <strong>方案 A（单选切换）</strong> 和 <strong>方案 B（多选组合）</strong> 两种链选择器入口组件。</p>
-
-    <h3>快捷键</h3>
-    <ul>
-      <li><kbd>F</kbd> — 开关 Fusion 多链模式（也可点击顶部开关）</li>
-      <li><kbd>A</kbd> / <kbd>B</kbd> — 切换方案 A（单选）或 方案 B（多选）</li>
-      <li><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> — 打开 3 个入口的链选择器 dropdown</li>
-      <li><kbd>Esc</kbd> — 关闭 dropdown</li>
-    </ul>
-
-    <h3>操作步骤</h3>
-    <ul>
-      <li>1. 按 <kbd>F</kbd> 开启 Fusion 模式，页面切换为多链视图</li>
-      <li>2. 点击页面上高亮的链图标区域（或按 <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>）打开 dropdown</li>
-      <li>3. 在顶部栏切换 <strong>A 单选</strong> / <strong>B 多选</strong> 查看不同方案的选择器样式</li>
-      <li>4. 方案 A：点击链名切换选中项（单选互斥）；方案 B：点击 checkbox 勾选/取消</li>
-      <li>5. 向下滚动查看方案对比详情、同步点说明和弹窗预览</li>
-    </ul>
-
-    <h3>3 个入口位置</h3>
-    <ul>
-      <li><strong>入口 1</strong> — 导航栏左侧链图标组（Ticker 旁）</li>
-      <li><strong>入口 2</strong> — Topic Rush tab 右侧链图标组</li>
-      <li><strong>入口 3</strong> — My Positions Widget 头部链图标组</li>
-    </ul>
+<!-- ═══ Header ═══ -->
+<div class="header">
+  <div class="tag">P0 DECISION NEEDED</div>
+  <h1>Fusion Mode — 多链入口组件方案选择</h1>
+  <p class="sub">
+    Meme Rush 即将支持 <strong>BSC / SOL / Base 三链同屏交易</strong>（Fusion 模式）。<br>
+    用户在页面上通过「链选择器」切换查看/交易的链。<br>
+    当前有 <strong>两种入口组件方案</strong> 待选择，请查看对比后给出倾向。
+  </p>
+  <div class="meta">
+    <span>PRD: Fusion 多链同屏交易</span>
+    <span>PM: Elsa</span>
+    <span>KO: 2026-03-25</span>
+    <span>状态: 待排期，需确认组件方案</span>
   </div>
 </div>
 
-<!-- ═══ Control Bar ═══ -->
-<div class="ctrl">
-  <div class="ctrl-group">
-    <span class="ctrl-label">Fusion 多链模式</span>
-    <div class="toggle-sw" id="fusionToggle" onclick="toggleFusion()"><div class="dot"></div></div>
+<!-- ═══ Section: Full page context ═══ -->
+<div class="section">
+  <h2>Fusion 模式全貌</h2>
+  <p class="desc">开启 Fusion 后，页面从单链切换为三链混合视图。三个列表（New / Finalizing / Migrated）同时展示多链 token，右侧 My Positions 也聚合多链持仓。</p>
+  <div class="page-preview">
+    <img src="assets/fusion_page_on_multichain_v1.png" alt="Fusion Mode 全页面视图">
   </div>
-  <div class="ctrl-sep"></div>
-  <div class="ctrl-group">
-    <span class="ctrl-label">入口组件方案：</span>
-    <button class="pill active" id="pillA" onclick="pickOption('A')">A 单选</button>
-    <button class="pill" id="pillB" onclick="pickOption('B')">B 多选</button>
-  </div>
-  <div class="ctrl-sep"></div>
-  <div class="status">
-    <span class="dot-live off" id="statusDot"></span>
-    <span id="statusText">单链模式 · 按 F 或点击开关体验 Fusion</span>
+  <p class="page-caption">Fusion 模式开启后的 Meme Rush 页面（BSC + SOL + Base 三链混排）</p>
+
+  <h2 style="margin-top:24px;">链选择器入口位置</h2>
+  <p class="desc">页面上有 3 个入口可以打开链选择器，它们<span style="color:var(--yellow);font-weight:600;">全局同步</span>——任意一个切换，其他两个跟着变。</p>
+  <div class="entry-list">
+    <div class="entry-tag"><span class="enum">1</span> 导航栏 Ticker 旁的链图标组</div>
+    <div class="entry-tag"><span class="enum">2</span> Topic Rush 标签旁的链图标组</div>
+    <div class="entry-tag"><span class="enum">3</span> My Positions 头部的链图标组</div>
   </div>
 </div>
 
-<!-- ═══ Full-Page View ═══ -->
-<div class="page-wrap" id="pageWrap">
-  <img class="page-img" id="pageImg" src="assets/current_page_singlechain.png" alt="Demo">
+<!-- ═══ Section: A vs B ═══ -->
+<div class="section">
+  <h2>方案 A vs 方案 B</h2>
+  <p class="desc">两种方案的核心区别：<strong>单选（Radio）</strong>还是 <strong>多选（Checkbox）</strong>。点击入口后弹出的选择器 UI 不同，列表筛选逻辑也不同。</p>
 
-  <!-- Entry 1: Nav bar chain icons (top-left area) -->
-  <div class="trigger" id="zone0" style="display:none;
-    left:4.12%; top:6.69%; width:3.54%; height:1.26%;" onclick="toggle(0)">
-    <div class="chain-dd" id="dd0"></div>
-  </div>
-
-  <!-- Entry 2: Topic Rush chain icons (toolbar area) -->
-  <div class="trigger" id="zone1" style="display:none;
-    left:21.26%; top:11.27%; width:2.88%; height:1.56%;" onclick="toggle(1)">
-    <div class="chain-dd" id="dd1"></div>
-  </div>
-
-  <!-- Entry 3: My Positions header (right panel) -->
-  <div class="trigger" id="zone2" style="display:none;
-    left:82.66%; top:10.71%; width:5.06%; height:1.61%;" onclick="toggle(2)">
-    <div class="chain-dd" id="dd2"></div>
-  </div>
-
-  <div class="page-backdrop" id="pageBackdrop" onclick="closeDD()"></div>
-</div>
-
-<!-- ═══ Info Section ═══ -->
-<div class="info">
-  <h2>方案 A vs 方案 B — 入口组件对比</h2>
-  <div class="cmp">
-    <div class="cmp-card active" id="cmpA" onclick="pickOption('A')">
-      <h3><span class="badge">A</span> 单选切换 <span style="font-size:11px;color:var(--t3);font-weight:400;">Radio</span></h3>
-      <table>
-        <tr><td>交互</td><td>选一条链，或选 "BSC/SOL/BASE" 全链模式</td></tr>
-        <tr><td>选中态</td><td>✓ 标记当前选中（单选互斥）</td></tr>
-        <tr><td>列表</td><td>单链 → 该链；全链 → 三链混排</td></tr>
-        <tr><td>QuickBuy</td><td>单链 1 行 / 全链 3 行（per-chain）</td></tr>
-      </table>
-      <p class="pro">✓ 简单直觉，和当前切换体验一致</p>
-      <p class="pro">✓ 无"选了 2 条链"的边界 case</p>
-      <p class="con">✗ 无法灵活组合（如仅 BSC+SOL）</p>
+  <div class="compare">
+    <!-- Option A -->
+    <div class="option-card">
+      <div class="card-head">
+        <span class="badge">A</span>
+        <div><span class="title">单选切换</span> <span class="subtitle">Radio</span></div>
+      </div>
+      <div class="card-visual">
+        <img src="assets/fig_group_a.png" alt="Option A — Radio 单选">
+      </div>
+      <div class="card-body">
+        <table>
+          <tr><td>交互</td><td>选一条链，或选 "BSC/SOL/BASE" 全链模式</td></tr>
+          <tr><td>选中态</td><td>✓ 标记当前选中（单选互斥）</td></tr>
+          <tr><td>列表</td><td>单链 → 只显示该链 token；全链 → 三链混排</td></tr>
+          <tr><td>QuickBuy</td><td>单链 1 行 / 全链 3 行（per-chain 金额）</td></tr>
+        </table>
+      </div>
+      <div class="card-footer">
+        <p class="pro">+ 简单直觉，和当前切链体验一致</p>
+        <p class="pro">+ 没有「选了 2 条链」的边界 case</p>
+        <p class="con">- 无法灵活组合（如只看 BSC+SOL，不看 Base）</p>
+      </div>
     </div>
-    <div class="cmp-card" id="cmpB" onclick="pickOption('B')">
-      <h3><span class="badge">B</span> 多选组合 <span style="font-size:11px;color:var(--t3);font-weight:400;">Checkbox</span></h3>
-      <table>
-        <tr><td>交互</td><td>Checkbox 勾选任意链组合（1/2/3 条）</td></tr>
-        <tr><td>选中态</td><td>☑ 多选，至少保留 1 条</td></tr>
-        <tr><td>列表</td><td>勾选哪些链就显示哪些链 token</td></tr>
-        <tr><td>QuickBuy</td><td>按勾选链数量展开 input</td></tr>
-      </table>
-      <p class="pro">✓ 灵活度最高，任意 2 链组合</p>
-      <p class="pro">✓ 触发器直接展示已选链 icon</p>
-      <p class="con">✗ 概念更复杂，需理解多选</p>
-      <p class="con">✗ 2 链混排排序逻辑需额外定义</p>
+
+    <!-- Option B -->
+    <div class="option-card">
+      <div class="card-head">
+        <span class="badge">B</span>
+        <div><span class="title">多选组合</span> <span class="subtitle">Checkbox</span></div>
+      </div>
+      <div class="card-visual">
+        <img src="assets/fig_group_b.png" alt="Option B — Checkbox 多选">
+      </div>
+      <div class="card-body">
+        <table>
+          <tr><td>交互</td><td>Checkbox 勾选任意链的组合（1/2/3 条）</td></tr>
+          <tr><td>选中态</td><td>☑ 多选，至少保留 1 条链</td></tr>
+          <tr><td>列表</td><td>勾选哪些链，就展示哪些链的 token</td></tr>
+          <tr><td>QuickBuy</td><td>按勾选链数量展开 input</td></tr>
+        </table>
+      </div>
+      <div class="card-footer">
+        <p class="pro">+ 灵活度最高，支持任意 2 链组合</p>
+        <p class="pro">+ 触发器直接展示已选链 icon</p>
+        <p class="con">- 概念更复杂，用户需要理解多选</p>
+        <p class="con">- 2 链混排时排序逻辑需额外定义</p>
+      </div>
     </div>
   </div>
+</div>
 
+<!-- ═══ Section: Sync points ═══ -->
+<div class="section">
   <h2>Fusion 模式全局同步点</h2>
-  <p style="font-size:12px;color:var(--t2);margin-bottom:16px;">开启多链模式后，以下位置的链选择器<strong style="color:var(--yellow);">全部同步切换</strong>，任意入口切换即时生效。</p>
-  <div class="sync-map">
-    <div class="sync-item"><div class="loc">Meme Rush 列表 ×3</div><div class="desc">New / Finalizing / Migrated 列头的链选择器同步，token 混排</div></div>
-    <div class="sync-item"><div class="loc">My Positions</div><div class="desc">Widget 左上角多链入口，PnL 分行展示各链盈亏</div></div>
-    <div class="sync-item"><div class="loc">QuickBuy</div><div class="desc">Preset 按链展开，金额 per-chain 配置</div></div>
-    <div class="sync-item"><div class="loc">Watchlist / Position Bar</div><div class="desc">title 下方增加多链入口组件</div></div>
-    <div class="sync-item"><div class="loc">筛选 / Blacklist</div><div class="desc">弹窗顶部 chain 切换 tab，按链独立配置</div></div>
-    <div class="sync-item"><div class="loc">Customize</div><div class="desc">chain tab 切换；Table Layout 全局同步，其他按链独立</div></div>
-    <div class="sync-item"><div class="loc">TP/SL</div><div class="desc">chain tab 切换，开关状态按链独立保存</div></div>
-    <div class="sync-item"><div class="loc">右上角余额</div><div class="desc">仅展示当前链 + 选中代币余额（不做多链汇总）</div></div>
-  </div>
-
-  <h2>弹窗内 Chain 切换组件预览</h2>
-  <p style="font-size:12px;color:var(--t2);margin-bottom:16px;">所有弹窗顶部增加 chain tab（BSC → SOL → Base），按链独立保存设置。</p>
-  <div class="dialog-row">
-    <div class="dialog-preview"><div class="dp-label">Filters 筛选弹窗</div><img src="assets/fusion_list_settings.png" alt="Filters"></div>
-    <div class="dialog-preview"><div class="dp-label">Blacklist 黑名单</div><img src="assets/fusion_blacklist_dialog.png" alt="Blacklist"></div>
-    <div class="dialog-preview"><div class="dp-label">My Positions</div><img src="assets/fusion_mypos_panel_v1.png" alt="My Positions"></div>
+  <p class="desc">开启多链模式后，以下位置的链选择器<strong style="color:var(--yellow);">全部同步切换</strong>，任意入口操作即时生效。</p>
+  <div class="sync-grid">
+    <div class="sync-card"><div class="loc">Meme Rush 列表 x3</div><div class="sdesc">New / Finalizing / Migrated 列头链选择器同步，token 混排</div></div>
+    <div class="sync-card"><div class="loc">My Positions</div><div class="sdesc">Widget 左上角多链入口，PnL 分行展示各链盈亏</div></div>
+    <div class="sync-card"><div class="loc">QuickBuy</div><div class="sdesc">Preset 按链展开，金额 per-chain 配置</div></div>
+    <div class="sync-card"><div class="loc">Watchlist / Position Bar</div><div class="sdesc">标题下方增加多链入口组件</div></div>
+    <div class="sync-card"><div class="loc">筛选 / Blacklist</div><div class="sdesc">弹窗顶部 chain tab 切换，按链独立配置</div></div>
+    <div class="sync-card"><div class="loc">Customize</div><div class="sdesc">chain tab 切换；Table Layout 全局同步，其他按链独立</div></div>
+    <div class="sync-card"><div class="loc">TP/SL</div><div class="sdesc">chain tab 切换，开关状态按链独立保存</div></div>
+    <div class="sync-card"><div class="loc">右上角余额</div><div class="sdesc">仅展示当前链 + 选中代币余额</div></div>
   </div>
 </div>
 
-<script>
-/* ── Inline SVG chain logos (no external dependency) ── */
-const CHAIN_ICONS = {
-  bsc: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="32" height="32" rx="8" fill="#F0B90B"/>
-    <path d="M16 6l3.09 3.09-5.72 5.72L10.28 11.72 16 6zm6.91 6.91L26 16l-3.09 3.09-5.72-5.72 3.09-3.09-1.37 1.37zm-13.82 0l3.09 3.09-5.72 5.72L3.27 18.63l2.18-2.18L6 16l3.09-3.09zM16 17.19l3.09 3.09L16 23.37l-3.09-3.09L16 17.19z" fill="#fff" transform="translate(0,0.5) scale(0.85)" transform-origin="16 16"/>
-  </svg>`,
-  sol: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="32" height="32" rx="8" fill="#1a1a2e"/>
-    <defs><linearGradient id="sg" x1="5" y1="27" x2="27" y2="5"><stop stop-color="#9945FF"/><stop offset="1" stop-color="#14F195"/></linearGradient></defs>
-    <path d="M9 20.5h12.5l2.5-2.5H11.5L9 20.5zm0-4.5L11.5 13.5H24L21.5 16H9zm15-4.5H11.5L9 9h14.5l2.5 2.5z" fill="url(#sg)"/>
-  </svg>`,
-  base: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="32" height="32" rx="8" fill="#0052FF"/>
-    <circle cx="16" cy="16" r="8" fill="#0052FF"/>
-    <path d="M16 8a8 8 0 100 16 8 8 0 000-16zm0 13.6a5.6 5.6 0 110-11.2 5.6 5.6 0 010 11.2z" fill="#fff"/>
-    <path d="M16 10.4a5.6 5.6 0 00 0 11.2V16h5.6A5.6 5.6 0 0016 10.4z" fill="#fff"/>
-  </svg>`
-};
+<!-- ═══ Section: Dialog previews ═══ -->
+<div class="section">
+  <h2>弹窗内 Chain 切换组件预览</h2>
+  <p class="desc">Fusion 模式下，所有弹窗顶部增加 chain tab（BSC / SOL / Base），按链独立保存设置。</p>
+  <div class="dialog-row">
+    <div class="dialog-item"><div class="dlabel">Filters 筛选弹窗</div><img src="assets/fusion_list_settings.png" alt="Filters"></div>
+    <div class="dialog-item"><div class="dlabel">Blacklist 黑名单</div><img src="assets/fusion_blacklist_dialog.png" alt="Blacklist"></div>
+    <div class="dialog-item"><div class="dlabel">My Positions</div><img src="assets/fusion_mypos_panel_v1.png" alt="My Positions"></div>
+  </div>
+</div>
 
-const CHAINS = [
-  { id:'bsc', name:'BNB Smart Chain', color:'#F0B90B' },
-  { id:'sol', name:'Solana',          color:'#9945FF' },
-  { id:'base',name:'Base',            color:'#0052FF' },
-];
+<div class="footer">
+  Fusion Mode — Meme Rush Multi-chain Trading &nbsp;|&nbsp; 2026-03-25
+</div>
 
-let fusionOn = false, option = 'A', activeDD = -1;
-
-// State: Option A → which chain is selected (index, -1=all)
-let selectedChainA = 0; // default: BNB Smart Chain
-// State: Option B → which chains are checked
-let checkedChainsB = [true, false, true]; // default: BSC + Base checked
-
-function chainIcon(id, size) {
-  const s = size || 28;
-  return `<div class="ci" style="width:${s}px;height:${s}px;border-radius:${Math.round(s*0.28)}px;overflow:hidden;flex-shrink:0;">${CHAIN_ICONS[id]}</div>`;
-}
-
-function checkSvg(checked) {
-  if (!checked) return '';
-  return `<svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-}
-
-/* ── Build dropdown HTML ── */
-function buildDropdowns() {
-  document.querySelectorAll('.chain-dd').forEach(dd => {
-    dd.innerHTML = buildDDContent();
-  });
-}
-
-function buildDDContent() {
-  if (option === 'A') {
-    // Option A: Radio single-select, matching Figma fig_group_a.png
-    const allSelected = selectedChainA === -1;
-    let html = `
-      <div class="dd-row" data-idx="-1" onclick="selectChainA(-1, event)">
-        <div class="ci-group" style="display:flex;gap:3px;">
-          ${CHAINS.map(c => chainIcon(c.id, 22)).join('')}
-        </div>
-        <span class="cname">BSC/SOL/BASE</span>
-        ${allSelected ? '<span class="dd-check">✓</span>' : ''}
-      </div>
-      <div class="dd-sep"></div>`;
-    CHAINS.forEach((c, i) => {
-      const sel = selectedChainA === i;
-      html += `
-      <div class="dd-row" data-idx="${i}" onclick="selectChainA(${i}, event)">
-        ${chainIcon(c.id, 28)}
-        <span class="cname">${c.name}</span>
-        ${sel ? '<span class="dd-check">✓</span>' : ''}
-      </div>`;
-    });
-    return html;
-  } else {
-    // Option B: Checkbox multi-select, matching Figma fig_group_b.png
-    return CHAINS.map((c, i) => `
-      <div class="dd-row" data-idx="${i}" onclick="toggleChainB(${i}, event)">
-        <div class="dd-cb ${checkedChainsB[i] ? 'checked' : ''}">${checkSvg(checkedChainsB[i])}</div>
-        ${chainIcon(c.id, 28)}
-        <span class="cname">${c.name}</span>
-      </div>
-    `).join('');
-  }
-}
-
-function selectChainA(idx, e) {
-  e.stopPropagation();
-  selectedChainA = idx;
-  buildDropdowns();
-}
-
-function toggleChainB(idx, e) {
-  e.stopPropagation();
-  // Must keep at least 1 checked
-  const willUncheck = checkedChainsB[idx];
-  const checkedCount = checkedChainsB.filter(Boolean).length;
-  if (willUncheck && checkedCount <= 1) return; // prevent unchecking last one
-  checkedChainsB[idx] = !checkedChainsB[idx];
-  buildDropdowns();
-}
-
-function toggleFusion() {
-  fusionOn = !fusionOn;
-  closeDD();
-  document.getElementById('fusionToggle').classList.toggle('on', fusionOn);
-  document.getElementById('pageImg').src = fusionOn
-    ? 'assets/fusion_page_on_multichain_v1.png'
-    : 'assets/current_page_singlechain.png';
-  for (let i = 0; i <= 2; i++)
-    document.getElementById('zone' + i).style.display = fusionOn ? 'block' : 'none';
-  document.getElementById('statusDot').className = 'dot-live ' + (fusionOn ? 'on' : 'off');
-  document.getElementById('statusText').textContent = fusionOn
-    ? '多链模式 ON · 点击链图标查看选择器（或按 1/2/3）'
-    : '单链模式 · 按 F 或点击开关体验 Fusion';
-}
-
-function pickOption(opt) {
-  option = opt;
-  document.getElementById('pillA').classList.toggle('active', opt === 'A');
-  document.getElementById('pillB').classList.toggle('active', opt === 'B');
-  document.getElementById('cmpA').classList.toggle('active', opt === 'A');
-  document.getElementById('cmpB').classList.toggle('active', opt === 'B');
-  buildDropdowns();
-}
-
-function toggle(idx) {
-  if (activeDD === idx) { closeDD(); return; }
-  closeDD();
-  activeDD = idx;
-  document.getElementById('zone' + idx).classList.add('active');
-  document.getElementById('dd' + idx).classList.add('show');
-  document.getElementById('pageBackdrop').classList.add('show');
-}
-
-function closeDD() {
-  if (activeDD >= 0) {
-    document.getElementById('zone' + activeDD).classList.remove('active');
-    document.getElementById('dd' + activeDD).classList.remove('show');
-  }
-  activeDD = -1;
-  document.getElementById('pageBackdrop').classList.remove('show');
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'f' || e.key === 'F') toggleFusion();
-  if (e.key === 'a' || e.key === 'A') pickOption('A');
-  if (e.key === 'b' || e.key === 'B') pickOption('B');
-  if (e.key === 'Escape') closeDD();
-  if (fusionOn && e.key >= '1' && e.key <= '3') toggle(parseInt(e.key) - 1);
-});
-
-buildDropdowns();
-</script>
 </body>
 </html>
